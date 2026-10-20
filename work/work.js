@@ -53,6 +53,11 @@ ready(function(){
   function reset(){cur=null;row.classList.remove('pull');items.forEach(function(o){o.classList.remove('on')});if(G)G.set(items.concat([].concat.apply([],P.map(function(q){return [q.cover,q.spine,q.shade,q.cap,q.more,q.hook,q.cr,q.go,q.led].concat(q.lat)})).filter(Boolean)),{clearProps:'flexGrow,scale,filter,opacity,height,y,width,marginRight,transform'})}
   if(stack.addEventListener)stack.addEventListener('change',reset);
   items.forEach(function(it,i){var a=P[i].a;if(!a)return;
+    /* each card opens its own case study. The card's link is a "Collection page" link, which only knows its item when it
+       is set to "Current Projects" in the Designer; until then it publishes as "#". data-slug is bound to the item's Slug,
+       so the card always gets /projects/<slug> (a no-op once the Designer link resolves) */
+    var slug=(a.getAttribute('data-slug')||'').trim(),href=a.getAttribute('href')||'';
+    if(slug&&href.indexOf('/projects/')<0)a.setAttribute('href','/projects/'+encodeURIComponent(slug));
     var img=P[i].cover,pos=img&&img.getAttribute('data-pos');if(pos&&/^\s*-?\d/.test(pos))img.style.objectPosition=pos;
     var name=($('.sh-cap-t',a)||{}).textContent||'',hook=($('.sh-hook',a)||{}).textContent||'';
     if(name.trim())a.setAttribute('aria-label',name.trim()+(hook.trim()?'. '+hook.trim():'')+' Open the case study.');
