@@ -1,0 +1,106 @@
+/* ===== HEADER V2: motion and states, one owner =====
+   Everything you see is native on the canvas: the bar's layers (.hd-paper, .hd-glass, .hd-rim), the logo embed, the
+   links, the green signal bar (.hd-trk), the dot burger (.hd-dots / .hd-dot), the menu (.hd-menu-list.is-wipe) and its
+   links (.hd-wl, .hd-wl-t, .hd-wl-m, .hd-wl-cta). This block only holds what the Designer cannot: values multiplied by
+   live variables, states keyed to a parent, and the dark-page overrides.
+
+   THE KNOBS
+     --hd-inset   how far the bar pulls in from the edges once detached
+     --hd-radius  its corner radius once detached
+     --hd-dist    pixels of scroll the detach + condense takes
+     --hd-shrink  how much slimmer the bar gets once condensed (visual only)
+   The script writes --p (detach, 0..1), --c (condense, 0..1; 1 while the menu is open) and --hd-fold (the height of the
+   subtitle strip, measured). Layout height never changes: the header stays sticky and nothing below it moves. */
+:root{--hd-inset:14px;--hd-radius:10px;--hd-dist:120;--hd-shrink:10px}
+@media (max-width:767px){:root{--hd-inset:10px;--hd-shrink:8px}}
+
+.hd.hdx{--p:0;--c:0;top:calc(var(--hd-inset)*var(--p));margin-left:calc(var(--hd-inset)*var(--p));margin-right:calc(var(--hd-inset)*var(--p));
+  border-radius:calc(var(--hd-radius)*var(--p));pointer-events:none}
+.hdx .hd-row{pointer-events:auto}
+.hdx:not(.is-folded) .hd-sub{pointer-events:auto}
+
+/* the bar's layers end where the visible bar ends */
+.hdx .hd-paper,.hdx .hd-glass,.hdx .hd-rim{border-radius:inherit;bottom:calc((var(--hd-fold,0px) + var(--hd-shrink))*var(--c))}
+.hdx .hd-paper{opacity:calc(1 - var(--p))}
+.hdx .hd-glass{opacity:var(--p);box-shadow:inset 0 0 0 1.5px rgba(13,13,13,.92),0 12px 34px -8px rgba(13,13,13,.2)}
+.hdx .hd-rim{opacity:var(--p);
+  background-image:linear-gradient(150deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.3) 24%,rgba(255,255,255,0) 46%,rgba(255,255,255,.18) 64%,rgba(255,255,255,.88) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+
+/* condense: the subtitle strip folds away, the logo shrinks, the row sits centred in the slimmer bar */
+.hdx .hd-hair{opacity:calc(1 - var(--c)*2)}
+.hdx .hd-hair-2{opacity:calc(1 - max(var(--p),var(--c))*2.2)}
+.hdx .hd-sub{opacity:calc(1 - var(--c)*2.4);clip-path:inset(0 0 calc(min(1,var(--c)*1.6)*100%) 0)}
+.hdx .hd-brand{transform:translateY(calc(var(--hd-shrink)*var(--c)*-.5)) scale(calc(1 - var(--c)*.27));transform-origin:0 50%}
+.hdx .hd-nav,.hdx .hd-burger{transform:translateY(calc(var(--hd-shrink)*var(--c)*-.5))}
+@media (max-width:767px){.hdx .hd-brand{transform:translateY(calc(var(--hd-shrink)*var(--c)*-.5)) scale(calc(1 - var(--c)*.12))}}
+
+/* ---- the logo: the script owns every dot (position, opacity, light) ---- */
+.hdx .dmx use{animation:none!important;opacity:1}
+.hdx .hd-brand:focus-visible{outline:2px solid currentColor;outline-offset:4px;border-radius:4px}
+
+/* ---- load: links rise one by one ---- */
+.hdx .hd-link,.hdx .hd-burger{opacity:0;translate:0 10px}
+.hdx.is-in .hd-link,.hdx.is-in .hd-burger{opacity:1;translate:0 0;transition:opacity .55s cubic-bezier(.16,1,.3,1) calc(.3s + var(--i,0)*70ms),translate .7s cubic-bezier(.16,1,.3,1) calc(.3s + var(--i,0)*70ms)}
+.hdx.is-now .hd-link,.hdx.is-now .hd-burger{transition:none!important}
+
+/* ---- desktop: the signal track ---- */
+.hdx .hd-nav{position:relative}
+.hdx .hd-trk{transform-origin:0 50%;will-change:transform,width}
+.hdx .hd-trk.is-off{opacity:0}
+.hdx .hd-trk.is-flash{animation:hdxFlash .34s steps(1) 1}
+@keyframes hdxFlash{0%{opacity:1}25%{opacity:.15}50%{opacity:1}75%{opacity:.15}100%{opacity:1}}
+.hdx .hd-nav .hd-link{transition:opacity .3s cubic-bezier(.16,1,.3,1)}
+.hdx.is-in .hd-nav.is-hover .hd-link:not(.is-on){opacity:.45}
+.hdx .hd-link:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.hdx-t{pointer-events:none}
+
+/* ---- the dot burger: four edge dots swirl in to make an X ---- */
+.hdx .hd-dot{transition:transform .55s cubic-bezier(.16,1,.3,1),background-color .35s}
+.hdx .hd-dot:nth-child(4){transition-delay:.03s}.hdx .hd-dot:nth-child(6){transition-delay:.06s}.hdx .hd-dot:nth-child(8){transition-delay:.09s}
+.hdx .hd-burger.w--open .hd-dot:nth-child(2){transform:translate(4.5px,4.5px)}
+.hdx .hd-burger.w--open .hd-dot:nth-child(6){transform:translate(-4.5px,4.5px)}
+.hdx .hd-burger.w--open .hd-dot:nth-child(8){transform:translate(-4.5px,-4.5px)}
+.hdx .hd-burger.w--open .hd-dot:nth-child(4){transform:translate(4.5px,-4.5px)}
+.hdx .hd-burger{-webkit-tap-highlight-color:transparent;outline:none}
+.hdx .hd-burger:focus-visible{outline:2px solid currentColor;outline-offset:-4px;border-radius:8px}
+
+/* ---- phone menu: the pixel wipe ---- */
+.hdx .hd-menu{z-index:auto}
+.hdx .hd-menu-list.is-wipe.w--open,.hdx .hd-menu-list.is-wipe.is-closing{display:flex}
+.hdx .hd-menu-list.is-wipe{padding-top:calc(var(--hd-bottom,80px) + 14px)!important}
+.hdx-wipe{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.hdx .hd-menu-list.is-wipe>a{position:relative;opacity:0;transition:opacity .15s}
+.hdx .hd-menu-list.is-wipe.is-in>a{opacity:1;transition:opacity .25s calc(var(--i,0)*60ms)}
+.hdx .hd-wl.w--current .hd-wl-t::before{content:"";display:inline-block;width:9px;height:9px;margin-right:12px;vertical-align:.2em;background:#3AE73A;box-shadow:0 0 0 1px rgba(13,13,13,.6)}
+.hdx .hd-wl.is-hit .hd-wl-t{color:#3AE73A}
+.hdx .hd-wl:focus-visible .hd-wl-t{text-decoration:underline;text-underline-offset:6px}
+.hdx .hd-wl-cta:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+/* while the menu is open the bar sits on the wipe: no paper, light marks on ink */
+.hdx.is-menu .hd-paper,.hdx.is-menu .hd-glass,.hdx.is-menu .hd-rim{opacity:0}
+.hdx.is-menu .hd-logo{color:#F2F3F4}
+.hdx.is-menu .hd-dot{background-color:#F2F3F4}
+
+/* ---- dark pages (Home's hero, Get in touch) and dark content under the bar ---- */
+body.hl-dark .hd.hdx .hd-dot,.hd.hdx.on-dark .hd-dot{background-color:#F2F0F3}
+body.hl-dark .hd.hdx .hd-link:hover{color:#F2F0F3}
+body.hl-dark .hdx .hd-menu-list.is-wipe{color:#0D0D0D}
+body.hl-dark .hdx .hd-wl{border-color:rgba(13,13,13,.14)}
+body.hl-dark .hd.hdx.is-menu .hd-logo{color:#0D0D0D}
+body.hl-dark .hd.hdx.is-menu .hd-dot{background-color:#0D0D0D}
+.hdx.on-dark .hd-glass{background-color:rgba(18,18,20,.62);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.34),0 14px 40px -8px rgba(0,0,0,.5)}
+.hdx.on-dark .hd-rim{background-image:linear-gradient(150deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.16) 26%,rgba(255,255,255,0) 48%,rgba(255,255,255,.12) 66%,rgba(255,255,255,.45) 100%)}
+.hdx.on-dark .hd-logo,.hdx.on-dark .hd-nav .hd-link{color:#F2F3F4}
+.hdx.on-dark .hd-sub{color:#B9BDC1}
+.hd.hdx .hd-logo,.hd.hdx .hd-sub,.hd.hdx .hd-nav .hd-link{transition:color .3s cubic-bezier(.32,.72,0,1),opacity .3s cubic-bezier(.16,1,.3,1)}
+.hdx.is-in .hd-nav .hd-link{transition:color .3s cubic-bezier(.32,.72,0,1),opacity .55s cubic-bezier(.16,1,.3,1) calc(.3s + var(--i,0)*70ms),translate .7s cubic-bezier(.16,1,.3,1) calc(.3s + var(--i,0)*70ms)}
+.hdx.is-in.is-ready .hd-nav .hd-link{transition:color .3s cubic-bezier(.32,.72,0,1),opacity .3s cubic-bezier(.16,1,.3,1)}
+/* higher contrast keeps light type on dark bars */
+body.a11y-contrast.hl-dark .hd.hdx .hd-link,body.a11y-contrast.hl-dark .hd.hdx .hd-sub,body.a11y-contrast .hd.hdx.on-dark .hd-link,body.a11y-contrast .hd.hdx.on-dark .hd-sub{color:#FFFFFF!important}
+
+/* ---- fallbacks ---- */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.hdx .hd-glass{background-color:rgba(255,255,255,.93)}}
+@media (prefers-reduced-transparency:reduce){.hdx .hd-glass{-webkit-backdrop-filter:none;backdrop-filter:none;background-color:#FFFFFF}}
+@media (prefers-reduced-motion:reduce){.hdx .hd-link,.hdx .hd-burger{opacity:1;translate:none;transition:none!important}.hdx .hd-dot{transition:none}.hdx .hd-trk.is-flash{animation:none}}
+body.a11y-motion .hdx .hd-link,body.a11y-motion .hdx .hd-burger{opacity:1;translate:none;transition:none!important}
+body.a11y-motion .hdx .hd-dot{transition:none}
