@@ -1,0 +1,52 @@
+/* Services: code-only CSS. Layout and look live on the native sv10- classes in Webflow (on the shared ab5-ground).
+   This file carries the motion states the script toggles (rows, rules, word rise), the dot-matrix canvases, and rules
+   the Designer can't hold (pseudo-element draws, hover reveals keyed to a parent, media-query-only hiding).
+   Native now: chip blur, text wrapping, the index link's underline, scroll margins. */
+/* older Safari reads only the prefixed blur */
+.sv10-chip{-webkit-backdrop-filter:blur(6px)}
+.sv10-meta::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1.5px;background:#232323;transform-origin:left;transform:scaleX(0);animation:sv10draw 1.2s cubic-bezier(.16,1,.3,1) .1s forwards}
+@keyframes sv10draw{to{transform:scaleX(1)}}
+.ab5-ground .wr{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .03em .16em;margin:0 -.03em -.16em}
+.ab5-ground .wi{display:inline-block;transform:translateY(112%);transition:transform 1.05s cubic-bezier(.16,1,.3,1)}
+.ab5-ground .is-in .wi{transform:none}
+/* the dot-matrix face: real text for assistive tech, the canvas carries the look */
+.dm-on{line-height:0}
+.dm-on .dm-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.dm-cv{display:block;max-width:none}
+.sv10-pn.dm-on{cursor:default}
+/* the rule above each practice draws, then the name resolves */
+.sv10-rule::before{content:"";position:absolute;inset:0;background:#232323;transform-origin:left;transform:scaleX(0);transition:transform 1.1s cubic-bezier(.16,1,.3,1)}
+.sv10-pr.on .sv10-rule::before{transform:none}
+/* links */
+.sv10-lnk{background:linear-gradient(currentColor,currentColor) 0 100%/100% 1.5px no-repeat;transition:background-size .5s cubic-bezier(.16,1,.3,1)}
+.sv10-lnk:hover{background-size:0 1.5px;background-position:100% 100%}
+.sv10-lnk:focus-visible,.sv10-u:focus-visible{outline:2px solid #232323;outline-offset:3px;border-radius:3px}
+/* rows */
+.sv10-xh:focus-visible{outline:2px solid #232323;outline-offset:-2px;border-radius:6px}
+.sv10-xnm{transition:transform .7s cubic-bezier(.16,1,.3,1)}
+.sv10-nm{background:linear-gradient(currentColor,currentColor) 0 100%/0 1.5px no-repeat;padding-bottom:2px;transition:background-size .6s cubic-bezier(.16,1,.3,1)}
+.sv10-xh:hover .sv10-xnm,.sv10-xr.open .sv10-xnm{transform:translateX(5px)}
+.sv10-xh:hover .sv10-nm{background-size:100% 1.5px}
+.sv10-led{box-shadow:0 0 0 1px rgba(13,13,13,.45);transition:width .5s cubic-bezier(.16,1,.3,1),margin .5s cubic-bezier(.16,1,.3,1),opacity .3s}
+@media (hover:hover) and (pointer:fine){.sv10-xh:hover .sv10-led,.sv10-xh:focus-visible .sv10-led,.sv10-xr.open .sv10-led{width:8px;margin-right:9px;opacity:1}}
+.sv10-pm{transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.sv10-pm::before,.sv10-pm::after{content:"";position:absolute;left:0;right:0;top:6px;height:2px;background:#232323;transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.sv10-pm::after{transform:rotate(90deg)}
+.sv10-xr.open .sv10-pm{transform:rotate(180deg)}.sv10-xr.open .sv10-pm::after{transform:rotate(0)}
+.sv10-xp{grid-template-rows:0fr;transition:grid-template-rows .75s cubic-bezier(.16,1,.3,1)}
+.sv10-xr.open .sv10-xp{grid-template-rows:1fr}
+.sv10-xc{opacity:0;transform:translateY(-8px);transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.sv10-xr.open .sv10-xc{opacity:1;transform:none;transition-delay:.1s}
+@media (min-width:992px) and (hover:hover) and (pointer:fine){
+ .sv10-xt{translate:0 -50%;clip-path:inset(0 0 0 100%);transform:translateX(8px);transition:clip-path .6s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1),opacity .3s}
+ .sv10-xh:hover .sv10-xt:not(.no),.sv10-xh:focus-visible .sv10-xt:not(.no){opacity:.82;clip-path:inset(0);transform:none}
+ .sv10-xr.open .sv10-xt{opacity:0!important}}
+@media (max-width:991px),(hover:none),(pointer:coarse){.sv10-xt{display:none!important}}
+@media (prefers-reduced-motion:reduce){.sv10-meta::after{animation:none;transform:none}.sv10-rule::before{transform:none;transition:none}.sv10-xp,.sv10-xc,.ab5-ground .wi{transition:none!important}.ab5-ground .wi{transform:none}}
+body.a11y-motion .sv10-meta::after{animation:none;transform:none}body.a11y-motion .sv10-rule::before{transform:none;transition:none}body.a11y-motion .sv10-xp,body.a11y-motion .sv10-xc{transition:none!important}body.a11y-motion .ab5-ground .wi{transition:none!important;transform:none}
+
+/* ---------- Services motion (HL Kit) ---------- */
+/* the hero's lively dot grid runs edge to edge behind the hero copy */
+#hero>.hl-field{left:calc(-1*var(--sv-gx,0px));right:calc(-1*var(--sv-gx,0px));z-index:-1}
+/* the link that leans toward the pointer: GSAP moves it every frame, so no CSS transition on transform (it would lag) */
+.sv10-u[data-hl-magnet]{transition-property:color,background-color,border-color,text-decoration-color,opacity}
