@@ -48,7 +48,7 @@ function elColor(e){var p=e.getAttribute&&e.getAttribute('data-palette');if(p){v
 
 /* ---------------- the sky ---------------- */
 K.sky=function(o){o=o||{};if(K._sky)return K._sky;
-  var host=D.createElement('div');host.className='hl-sky';host.setAttribute('aria-hidden','true');var cv=D.createElement('canvas');host.appendChild(cv);
+  var host=D.createElement('div');host.className='hl-sky';host.setAttribute('aria-hidden','true');host.setAttribute('data-no-anim','');var cv=D.createElement('canvas');host.appendChild(cv);
   var gr=D.createElement('div');gr.className='hl-grain';host.appendChild(gr);D.body.insertBefore(host,D.body.firstChild);
   D.documentElement.classList.add('hl-sky-on');/* the Designer's ground colours ([data-hl-ground]) step aside for the sky */
   try{var nc=D.createElement('canvas');nc.width=nc.height=128;var nx=nc.getContext('2d'),id=nx.createImageData(128,128);for(var q=0;q<id.data.length;q+=4){var v=Math.random()*255|0;id.data[q]=id.data[q+1]=id.data[q+2]=v;id.data[q+3]=255}nx.putImageData(id,0,0);gr.style.backgroundImage='url('+nc.toDataURL()+')'}catch(e){}
@@ -158,7 +158,7 @@ function wire(){var cfg=W.HLKIT_PAGE||{};
   $$('[data-hl-count]').forEach(K.count);
   $$('[data-hl-step]').forEach(K.step);
   $$('[data-hl-magnet]').forEach(function(e){K.magnet(e,e.closest('[data-hl-magnet-zone]')||e)});
-  $$('[data-hl-grid]').forEach(function(h){if(h.__grid)return;var f=D.createElement('div');f.className='hl-field';f.setAttribute('aria-hidden','true');var c=D.createElement('canvas');f.appendChild(c);h.insertBefore(f,h.firstChild);
+  $$('[data-hl-grid]').forEach(function(h){if(h.__grid)return;var f=D.createElement('div');f.className='hl-field';f.setAttribute('aria-hidden','true');f.setAttribute('data-no-anim','');var c=D.createElement('canvas');f.appendChild(c);h.insertBefore(f,h.firstChild);
     var sky=K._sky,seq=sky?sky.seq():K.roll();h.__grid=K.dotGrid(c,{host:h,act:glow(seq[0])})});
   if(cfg.dark&&cfg.light&&!cfg.noSky)K.sky({dark:cfg.dark,light:cfg.light,bridge:cfg.bridge,lead:cfg.lead,sample:cfg.sample});
 }

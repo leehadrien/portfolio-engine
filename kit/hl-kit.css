@@ -30,3 +30,8 @@ body.hl-dark .hd .hd-hair,body.hl-dark .hd .hd-hair-2{background-color:rgba(242,
 body.hl-dark .hd .hd-burger-line{background-color:#F2F0F3}
 /* native ground colours are the Designer's fallback; once the sky runs it shows through */
 html.hl-sky-on [data-hl-ground]{background:none!important}
+
+/* the site's reveal engine must never touch the sky layers (it would force the grain to full strength) */
+.hl-sky .hl-grain,.hl-sky .hl-grain.k-item{opacity:.06!important;transform:none!important;transition:none!important}
+.hl-sky canvas,.hl-field canvas,.hl-sky canvas.k-item,.hl-field canvas.k-item{opacity:1!important;transform:none!important}
+.hl-sky.k-item,.hl-field.k-item{opacity:1!important;transform:none!important}
