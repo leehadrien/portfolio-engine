@@ -84,6 +84,8 @@
 /* ---- dark pages (Home's hero, Get in touch) and dark content under the bar ---- */
 body.hl-dark .hd.hdx .hd-dot,.hd.hdx.on-dark .hd-dot{background-color:#F2F0F3}
 body.hl-dark .hd.hdx .hd-link:hover{color:#F2F0F3}
+/* the kit gives the current link an outline on dark pages (v1); in v2 the signal bar marks the current page */
+body.hl-dark .hd.hdx .hd-link.w--current,.hd.hdx .hd-link.w--current{border-color:transparent}
 body.hl-dark .hdx .hd-menu-list.is-wipe{color:#0D0D0D}
 body.hl-dark .hdx .hd-wl{border-color:rgba(13,13,13,.14)}
 body.hl-dark .hd.hdx.is-menu .hd-logo{color:#0D0D0D}
