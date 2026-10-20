@@ -1,0 +1,32 @@
+/* HL Kit: the site-wide ground and motion (pairs with hl-kit.js) */
+.hl-sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.hl-sky canvas{position:absolute;left:-6%;top:-6%;width:112%;height:112%;display:block;filter:blur(34px)}
+.hl-grain{position:absolute;inset:0;opacity:.06;mix-blend-mode:overlay;background-size:160px 160px}
+.hl-field{position:absolute;left:0;right:0;top:0;bottom:0;z-index:0;pointer-events:none;
+  -webkit-mask-image:linear-gradient(180deg,#000 62%,transparent);mask-image:linear-gradient(180deg,#000 62%,transparent)}
+.hl-field canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sc-c{display:inline-block;text-align:center;white-space:pre}
+.sc-c.sc-x{color:#3AE73A}
+body.hd-lite .sc-c.sc-x,.hl-light .sc-c.sc-x{color:#16A34A}
+.hl-num{display:inline-block;text-align:right;font-variant-numeric:tabular-nums}
+.hl-counting .hl-num{color:#3AE73A;transition:color .4s}
+body.hd-lite .hl-counting .hl-num{color:#16A34A}
+/* stepped windows: with the reveal engine the clip rides its timing; without it the kit adds hl-pre/hl-in */
+[data-hl-step].k-item:not(.k-in),[data-hl-step].hl-pre{opacity:1!important;transform:none!important;clip-path:inset(50% 50% 50% 50% round var(--hl-r,10px))}
+[data-hl-step].k-item.k-in{opacity:1!important;transform:none!important;clip-path:inset(0 0 0 0 round var(--hl-r,10px));transition:clip-path .42s steps(7,end)!important;transition-delay:var(--k-delay,0s)!important}
+[data-hl-step].hl-in{clip-path:inset(0 0 0 0 round var(--hl-r,10px));transition:clip-path .42s steps(7,end)}
+@media(prefers-reduced-motion:reduce){[data-hl-step]{clip-path:none!important}}
+body.a11y-motion [data-hl-step]{clip-path:none!important}
+body.a11y-motion .hl-sky canvas{filter:blur(34px)}
+@media print{.hl-sky{display:none}}
+/* the live header over ink: dark glass and light type, until the ground under it turns light */
+.hd .hd-paper,.hd .hd-glass,.hd .hd-logo,.hd .hd-link,.hd .hd-sub,.hd .hd-hair,.hd .hd-hair-2,.hd .hd-burger-line{transition:background-color .45s,color .45s,opacity .45s,border-color .45s}
+body.hl-dark .hd .hd-paper{opacity:0}
+body.hl-dark .hd .hd-glass{background-color:rgba(16,16,20,.62)}
+body.hl-dark .hd .hd-logo,body.hl-dark .hd .hd-link,body.hl-dark .hd .hd-sub{color:#F2F0F3}
+body.hl-dark .hd .hd-link.w--current{border-color:rgba(242,240,243,.7)}
+body.hl-dark .hd .hd-link:hover{color:#0D0D0D}
+body.hl-dark .hd .hd-hair,body.hl-dark .hd .hd-hair-2{background-color:rgba(242,240,243,.18)}
+body.hl-dark .hd .hd-burger-line{background-color:#F2F0F3}
+/* native ground colours are the Designer's fallback; once the sky runs it shows through */
+html.hl-sky-on [data-hl-ground]{background:none!important}
