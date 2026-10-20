@@ -1,0 +1,52 @@
+/* Work: code-only remainder. The look of the hero and the shelf is native Webflow (wk3-*, sh-* classes);
+   this file only carries motion, the open/closed states the script toggles, and rules the Designer can't hold. */
+
+/* ---------- hero: the rule draws, the labels and lede fade up, the headline rises word by word ---------- */
+.wk3-meta::after{transform-origin:left;transform:scaleX(0);animation:wk3draw 1.2s cubic-bezier(.16,1,.3,1) .1s forwards}
+.wk3-ml,.wk3-mr{opacity:0;transform:translateY(8px);animation:wk3in .8s cubic-bezier(.16,1,.3,1) .35s forwards}
+.wk3-mr{animation-delay:.55s}
+.wk3-lede{opacity:0;transform:translateY(14px);animation:wk3in .9s cubic-bezier(.16,1,.3,1) .7s forwards}
+@keyframes wk3draw{to{transform:scaleX(1)}}@keyframes wk3in{to{opacity:1;transform:none}}
+.wk3-h1 .wk3-s{display:block;text-wrap:balance}
+.wk3-h1 .wr{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .03em .16em;margin:0 -.03em -.16em}
+.wk3-h1 .wi{display:inline-block;transform:translateY(112%);transition:transform 1.05s cubic-bezier(.16,1,.3,1)}
+.wk3-h1.in .wi{transform:none}
+/* the hero dot grid (HL Kit) runs edge to edge, from the top of the page, behind the copy */
+.wk3-hero>.hl-field{left:calc(-1*var(--wk-gx,60px));right:calc(-1*var(--wk-gx,60px));top:calc(-1*var(--wk-gy,149px));bottom:-40px;z-index:-1}
+.wk3-hero>*:not(.hl-field){position:relative;z-index:1}
+
+/* ---------- shelf: pointing at a spine (or focusing it) opens it; the rest close up and dim ---------- */
+.sh-row{--e:cubic-bezier(.16,1,.3,1)}
+.sh-item{transition:flex-grow .85s var(--e)}
+.sh-row.pull .sh-item{flex-grow:.62}
+.sh-row.pull .sh-item.on{flex-grow:4}
+.sh-cover{transition:transform 1.2s var(--e),filter .7s var(--e)}
+.sh-card .lattice,.sh-card .lattice-breathe{transition:opacity .9s var(--e)}
+.sh-spine{transition:opacity .45s var(--e)}
+.sh-cap{transition:opacity .4s var(--e)}
+.sh-shade{transition:opacity .7s var(--e)}
+.sh-more{transition:grid-template-rows .7s var(--e)}
+.sh-hook{transition:opacity .5s var(--e),transform .7s var(--e)}
+.sh-cr,.sh-go{transition:opacity .5s var(--e)}
+.sh-led{transition:width .5s var(--e),margin .5s var(--e)}
+.sh-item.on .lattice,.sh-item.on .lattice-breathe{opacity:0!important}
+.sh-item.on .sh-cover{transform:scale(1.03)}
+.sh-item.on .sh-spine{opacity:0}
+.sh-item.on .sh-cap{opacity:1;transition-delay:.25s}
+.sh-item.on .sh-shade{opacity:1}
+.sh-item.on .sh-more{grid-template-rows:1fr}
+.sh-item.on .sh-hook{opacity:1;transform:none;transition-delay:.42s}
+.sh-item.on .sh-cr{opacity:1;transition-delay:.5s}
+.sh-item.on .sh-go{opacity:1;transition-delay:.56s}
+.sh-item.on .sh-led{width:8px;margin-right:8px}
+.sh-row.pull .sh-item:not(.on) .sh-cover{filter:grayscale(.7) brightness(.62)}
+/* credits: a project without a named client starts at the role */
+.sh-cr-c:empty{display:none}
+/* phones are a stack of covers with the caption showing: no states there */
+@media (max-width:767px){.sh-row.pull .sh-item,.sh-row.pull .sh-item.on{flex-grow:0}.sh-row.pull .sh-item:not(.on) .sh-cover{filter:none}.sh-item.on .sh-cover{transform:none}}
+
+/* ---------- reduced motion (system setting or the site's Reduce motion switch) ---------- */
+@media (prefers-reduced-motion:reduce){.wk3-meta::after,.wk3-ml,.wk3-mr,.wk3-lede{animation:none;opacity:1;transform:none}.wk3-h1 .wi{transform:none;transition:none}.sh-row *,.sh-row .sh-item{transition:none!important}}
+body.a11y-motion .wk3-meta::after,body.a11y-motion .wk3-ml,body.a11y-motion .wk3-mr,body.a11y-motion .wk3-lede{animation:none;opacity:1;transform:none}
+body.a11y-motion .wk3-h1 .wi{transform:none;transition:none}
+body.a11y-motion .sh-row *,body.a11y-motion .sh-row .sh-item{transition:none!important}
