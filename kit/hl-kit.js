@@ -58,11 +58,13 @@ K.sky=function(o){o=o||{};if(K._sky)return K._sky;
   function heroPal(){var p=o.heroPalette&&o.heroPalette();return p&&p.length?p:null}
   function measure(){vh=innerHeight;var y=scrollY,a=el(o.dark),b=el(o.light),br=el(o.bridge);if(!a||!b){d0=vh*.6;d1=vh*1.1;d2=vh*1.6;return}
     var ab=a.getBoundingClientRect().bottom+y,bt=b.getBoundingClientRect().top+y;d0=ab-vh*.28;d1=br?br.getBoundingClientRect().top+y+br.offsetHeight*.5:(ab+bt)/2;
-    d2=bt+Math.min(140,vh*.16);if(d1<d0+80)d1=d0+80;if(d2<d1+120)d2=d1+120;dh=D.documentElement.scrollHeight;
+    d2=bt+Math.min(240,vh*.28);if(d1<d0+80)d1=d0+80;if(d2<d1+120)d2=d1+120;dh=D.documentElement.scrollHeight;
     sampleEls=$$(o.sample||'[data-palette]')}
   function phase(d){return d<d1?sm((d-d0)/(d1-d0)):1+sm((d-d1)/(d2-d1))}
-  function journey(d){return cl((d-d2)/Math.max(1,dh-d2-vh*.6),0,1)}
-  function seqAt(k,j){var n=SEQ.length,f=k+j*n*.9,i=Math.floor(f),t=f-i;return mx(SEQ[((i%n)+n)%n],SEQ[(((i+1)%n)+n)%n],sm(t))}
+  /* the light sky drifts one colour per ~1.6 screens of scroll, whatever the page length (a short page used to race through the
+     whole palette and read as flashing) */
+  function journey(d){return Math.max(0,d-d2)/Math.max(700,vh*1.6)}
+  function seqAt(k,j){var n=SEQ.length,f=k+j,i=Math.floor(f),t=f-i;return mx(SEQ[((i%n)+n)%n],SEQ[(((i+1)%n)+n)%n],sm(t))}
   function sample(now){if(now-lastSample<450)return;lastSample=now;var out=[];
     for(var i=0;i<sampleEls.length&&out.length<6;i++){var e=sampleEls[i],r=e.getBoundingClientRect();if(!r.width||r.bottom<vh*.05||r.top>vh*.95)continue;var cs=elColor(e);if(cs)cs.forEach(function(c){out.push({c:c,y:(r.top+r.bottom)/2/vh})})}
     content=out}
