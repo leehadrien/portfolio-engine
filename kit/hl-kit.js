@@ -9,6 +9,8 @@
         data-hl-step                 windows open in stepped frames from the centre (with the reveal engine)
         data-hl-magnet               leans toward the pointer
         data-hl-grid                 a Dot Grid in this hero
+                                     (tokens: ink = dark dots; lively = halftone wave, colour clouds, green lens)
+        data-hl-speed="1.6"           with lively: how fast the wave and clouds move (1 = calm)
    Page config: window.HLKIT_PAGE = {dark:'#hero', light:'#index', lead:'magenta', sample:'img.wk-thumb,[data-palette]'}
    Motion stands down for prefers-reduced-motion and the site's Reduce motion switch (body.a11y-motion). */
 (function(){
@@ -113,7 +115,7 @@ K.dotGrid=function(cv,o){if(!cv)return null;o=o||{};var ctx=cv.getContext('2d'),
      colours drift through the grid, and the pointer is a green lens that lights and grows the dots under it */
   var SZ=6,LP=[];
   function deepTone(c){var x=hsl(c);return rgbOf(x[0],Math.max(.62,x[1]),Math.min(.56,Math.max(.44,x[2])))}
-  function drawLively(now){ctx.clearRect(0,0,Wc,Hc);var mob=innerWidth<768,R=mob?1.2:1.65,prox=o.lens||(mob?120:190),t=still()?0:(now-t0)/1000,px=P.sx,py=P.sy,i,j,d,hot=[];
+  function drawLively(now){ctx.clearRect(0,0,Wc,Hc);var mob=innerWidth<768,R=mob?1.2:1.65,prox=o.lens||(mob?120:190),t=still()?0:(now-t0)/1000*(o.speed||1),px=P.sx,py=P.sy,i,j,d,hot=[];
     var tn=(o.tint&&o.tint())||[act],C=[],rr=Math.max(Wc,Hc)*.36;for(j=0;j<3;j++)C.push([Wc*(.5+.44*Math.sin(t*.17+j*2.1)),Hc*(.5+.4*Math.cos(t*.13+j*1.7)),deepTone(tn[j%tn.length])]);
     for(j=0;j<4*SZ;j++)LP[j]=new Path2D();
     for(i=0;i<dots.length;i++){d=dots[i];var x=d.x+d.dx,y=d.y+d.dy,ddx=x-px,ddy=y-py,d2=ddx*ddx+ddy*ddy;
@@ -192,7 +194,7 @@ function wire(){var cfg=W.HLKIT_PAGE||{};
   $$('[data-hl-magnet]').forEach(function(e){K.magnet(e,e.closest('[data-hl-magnet-zone]')||e)});
   $$('[data-hl-grid]').forEach(function(h){if(h.__grid)return;var f=D.createElement('div');f.className='hl-field';f.setAttribute('aria-hidden','true');f.setAttribute('data-no-anim','');var c=D.createElement('canvas');f.appendChild(c);h.insertBefore(f,h.firstChild);
     var sky=K._sky,seq=sky?sky.seq():K.roll();var tok=' '+(h.getAttribute('data-hl-grid')||'')+' ',ink=tok.indexOf(' ink ')>=0,lively=tok.indexOf(' lively ')>=0;var go=ink?{host:h,act:[22,163,74],base:[13,13,15],alpha:.1}:{host:h,act:glow(seq[0])};
-    if(lively){go.lively=true;go.act=[46,214,64];go.tint=function(){var s=K._sky;return s?s.seq():null}}h.__grid=K.dotGrid(c,go)});
+    if(lively){go.lively=true;go.act=[46,214,64];go.tint=function(){var s=K._sky;return s?s.seq():null};go.speed=parseFloat(h.getAttribute('data-hl-speed'))||1}h.__grid=K.dotGrid(c,go)});
   if(((cfg.dark&&cfg.light)||cfg.mode==='light')&&!cfg.noSky)K.sky({dark:cfg.dark,light:cfg.light,bridge:cfg.bridge,lead:cfg.lead,sample:cfg.sample,focus:cfg.focus,pull:cfg.pull,mode:cfg.mode,seq:cfg.seq,drift:cfg.drift,amp:cfg.amp});
 }
 /* smooth scroll stays with the site's own Lenis embed (window.__lenis): the kit never starts a second one */
