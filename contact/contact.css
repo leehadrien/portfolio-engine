@@ -1,0 +1,46 @@
+/* Get in touch: code-only CSS. The page is dark like Home's hero; its own look (type, colours, the white form window,
+   buttons, example-text colour) lives on the native ct-* and cf-* classes in Webflow. This file holds only rules one
+   element's state uses to change another (which a class can't express), the headline's word rise, the dot grid's
+   placement, and the shared footer's colours on this one dark page (its classes are shared with every light page). */
+
+/* ---------- the lively dot grid runs behind the whole page, under the form panel ---------- */
+.page-main[data-hl-grid]{position:relative}
+.page-main>.hl-field{z-index:-1}
+
+/* ---------- headline word rise ---------- */
+.ct-h1 .ct-s{display:block}
+.ct-h1 .wr{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .04em .14em;margin:0 -.04em -.14em}
+.ct-h1 .wi{display:inline-block;transform:translateY(112%);transition:transform 1.05s cubic-bezier(.16,1,.3,1)}
+.ct-h1.in .wi{transform:none}
+
+/* ---------- the form window (its look is native on ct-core, ct-bar, cf-*) ---------- */
+/* Webflow's success and error blocks wrap their copy in a bare <p>, which brings a bottom margin with it */
+.cf-done > p,.cf-fail > p{margin:0}
+/* the labels count 01-04, and the number lights while its field has focus */
+.cf-form{counter-reset:cf}
+.cf-field{counter-increment:cf}
+.cf-label::before{content:counter(cf,decimal-leading-zero);margin-right:10px;color:rgba(13,13,13,.4);transition:color .2s}
+.cf-field:focus-within .cf-label,.cf-field:focus-within .cf-label::before{color:#0D0D0D}
+/* errors only once the visitor has interacted, never on load */
+.cf-input:user-invalid{border-color:#B3261E}
+.cf-field:has(.cf-input:user-invalid) .cf-label,.cf-field:has(.cf-input:user-invalid) .cf-label::before{color:#B3261E}
+/* the stateful button holds the form in view during its tick with display:block, which would collapse the grid */
+.w-form.cf-sending > form.cf-form,.w-form.cf-closing > form.cf-form{display:grid!important}
+.w-form.cf-closing .w-form-done{display:none!important}
+/* sent: the window has closed; the thank-you stands on the sky */
+.ct-core.is-sent{background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;overflow:visible}
+.ct-core.is-sent .ct-bar{display:none}
+.ct-core.is-sent .cf-wrap{padding:0}
+.ct-core.is-sent .cf-done{background:none;border:0;border-radius:0;padding:0;color:#F2F0F3;font:500 clamp(24px,2.2vw,30px)/1.3 Geist,sans-serif;letter-spacing:-.02em;text-wrap:balance}
+.ct-core.is-sent .cf-done::before{content:"Sent";display:block;margin-bottom:14px;font:500 11px/1.2 'Geist Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#3AE73A}
+.cf-done:focus{outline:none}
+
+/* ---------- the shared footer, on ink on this page only ---------- */
+.cs-foot-d{border-top-color:rgba(242,240,243,.16)}
+.cs-foot-d .ft-copy,.ft-m .ft-copy{color:rgba(242,240,243,.64)}
+.ft-m .hd-hair{background-color:rgba(242,240,243,.16)}
+.a11y-open{border-color:rgba(242,240,243,.3)}
+
+/* ---------- reduced motion (system setting or the site's Reduce motion switch) ---------- */
+@media (prefers-reduced-motion:reduce){.ct-h1 .wi{transform:none;transition:none}.cf-input,.cf-label::before{transition:none}}
+body.a11y-motion .ct-h1 .wi{transform:none;transition:none}
