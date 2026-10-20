@@ -40,11 +40,15 @@ K.roll=function(lead){var w=shuffle(WARM),c=shuffle(COOL),seq=[],first=lead&&POO
 /* ---------------- content colours: what's on screen ---------------- */
 var cache=new Map();
 function imgColor(img){var src=img.currentSrc||img.src;if(!src)return null;if(cache.has(src))return cache.get(src);cache.set(src,null);
-  var im=new Image();im.crossOrigin='anonymous';im.onload=function(){try{var c=D.createElement('canvas');c.width=c.height=24;var x=c.getContext('2d');x.drawImage(im,0,0,24,24);
-      var d=x.getImageData(0,0,24,24).data,acc=[0,0,0],wsum=0;for(var i=0;i<d.length;i+=4){var p=[d[i],d[i+1],d[i+2]],h=hsl(p),w=h[1]*h[1]*(h[2]>.12&&h[2]<.9?1:.05);acc[0]+=p[0]*w;acc[1]+=p[1]*w;acc[2]+=p[2]*w;wsum+=w}
-      cache.set(src,wsum>3?[acc[0]/wsum,acc[1]/wsum,acc[2]/wsum]:null)}catch(e){cache.set(src,null)}};im.src=src;return null}
+  /* same sampler as the case studies: bucket the saturated pixels of a 24x24 copy, keep the 3 most frequent distinct colours */
+  var im=new Image();im.crossOrigin='anonymous';im.onload=function(){try{var c=D.createElement('canvas');c.width=c.height=24;var x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,24,24);
+      var d=x.getImageData(0,0,24,24).data,Bk={};for(var i=0;i<d.length;i+=4){var r=d[i],g=d[i+1],b=d[i+2],h=hsl([r,g,b]);if(h[1]<.28||h[2]<.14||h[2]>.9)continue;var k=(r>>5)+','+(g>>5)+','+(b>>5);(Bk[k]=Bk[k]||{n:0,r:0,g:0,b:0}).n++;Bk[k].r+=r;Bk[k].g+=g;Bk[k].b+=b}
+      var top=Object.keys(Bk).map(function(k){var o=Bk[k];return {n:o.n,c:[o.r/o.n,o.g/o.n,o.b/o.n]}}).sort(function(a,b){return b.n-a.n}),pick=[];
+      top.forEach(function(t){if(pick.length<3&&pick.every(function(q){return Math.abs(q[0]-t.c[0])+Math.abs(q[1]-t.c[1])+Math.abs(q[2]-t.c[2])>90}))pick.push(t.c)});
+      cache.set(src,pick.length?pick:null)}catch(e){cache.set(src,null)}};im.src=src;return null}
 function elColor(e){var p=e.getAttribute&&e.getAttribute('data-palette');if(p){var m=p.match(/#[0-9a-fA-F]{6}/g);if(m)return m.map(hx)}
-  if(e.tagName==='IMG'){var c=imgColor(e);return c?[c]:null}return null}
+  if(e.tagName==='IMG')return imgColor(e);return null}
+K.palette=elColor;
 
 /* ---------------- the sky ---------------- */
 K.sky=function(o){o=o||{};if(K._sky)return K._sky;
@@ -53,10 +57,13 @@ K.sky=function(o){o=o||{};if(K._sky)return K._sky;
   D.documentElement.classList.add('hl-sky-on');/* the Designer's ground colours ([data-hl-ground]) step aside for the sky */
   try{var nc=D.createElement('canvas');nc.width=nc.height=128;var nx=nc.getContext('2d'),id=nx.createImageData(128,128);for(var q=0;q<id.data.length;q+=4){var v=Math.random()*255|0;id.data[q]=id.data[q+1]=id.data[q+2]=v;id.data[q+3]=255}nx.putImageData(id,0,0);gr.style.backgroundImage='url('+nc.toDataURL()+')'}catch(e){}
   var ctx=cv.getContext('2d'),CW=72,CH=48,INK=[13,13,15],PAPER=[250,248,246];cv.width=CW;cv.height=CH;
-  var SEQ=K.roll(o.lead),sampleEls=[],content=[],d0=0,d1=0,d2=0,dh=0,vh=innerHeight,t0=performance.now(),lastY=-1,lastT=0,raf=0,lastSample=0;
+  var SEQ=K.roll(o.lead),LIGHT=o.mode==='light',PULL=o.pull||.5,cur=[],lastDraw=0,sampleEls=[],content=[],d0=0,d1=0,d2=0,dh=0,vh=innerHeight,t0=performance.now(),lastY=-1,lastT=0,raf=0,lastSample=0;
   function el(x){return typeof x==='string'?$(x):x}
   function heroPal(){var p=o.heroPalette&&o.heroPalette();return p&&p.length?p:null}
-  function measure(){vh=innerHeight;var y=scrollY,a=el(o.dark),b=el(o.light),br=el(o.bridge);if(!a||!b){d0=vh*.6;d1=vh*1.1;d2=vh*1.6;return}
+  function measure(){vh=innerHeight;var y=scrollY,a=el(o.dark),b=el(o.light),br=el(o.bridge);dh=D.documentElement.scrollHeight;sampleEls=$$(o.sample||'[data-palette]');
+    /* light pages (no ink hero): the whole page sits in the light sky from the top */
+    if(LIGHT){d0=-3;d1=-2;d2=-1;return}
+    if(!a||!b){d0=vh*.6;d1=vh*1.1;d2=vh*1.6;return}
     var ab=a.getBoundingClientRect().bottom+y,bt=b.getBoundingClientRect().top+y;d0=ab-vh*.28;d1=br?br.getBoundingClientRect().top+y+br.offsetHeight*.5:(ab+bt)/2;
     d2=bt+Math.min(240,vh*.28);if(d1<d0+80)d1=d0+80;if(d2<d1+120)d2=d1+120;dh=D.documentElement.scrollHeight;
     sampleEls=$$(o.sample||'[data-palette]')}
@@ -65,9 +72,13 @@ K.sky=function(o){o=o||{};if(K._sky)return K._sky;
      whole palette and read as flashing) */
   function journey(d){return Math.max(0,d-d2)/Math.max(700,vh*1.6)}
   function seqAt(k,j){var n=SEQ.length,f=k+j,i=Math.floor(f),t=f-i;return mx(SEQ[((i%n)+n)%n],SEQ[(((i+1)%n)+n)%n],sm(t))}
-  function sample(now){if(now-lastSample<450)return;lastSample=now;var out=[];
-    for(var i=0;i<sampleEls.length&&out.length<6;i++){var e=sampleEls[i],r=e.getBoundingClientRect();if(!r.width||r.bottom<vh*.05||r.top>vh*.95)continue;var cs=elColor(e);if(cs)cs.forEach(function(c){out.push({c:c,y:(r.top+r.bottom)/2/vh})})}
-    content=out}
+  /* what's on screen feeds the sky. An opened item (o.focus) takes over the whole sky with its own colours */
+  function sample(now){if(now-lastSample<450)return;lastSample=now;var out=[],fe=o.focus&&$(o.focus);
+    if(fe){var fc=elColor(fe);if(fc){content=fc.map(function(c,i){return {c:c,y:.5,all:1}});return}}
+    /* one lead colour per item on screen (so a row of covers shows a colour from each); a lone item gives all of its colours */
+    var extra=[];for(var i=0;i<sampleEls.length&&out.length<6;i++){var e=sampleEls[i],r=e.getBoundingClientRect();if(!r.width||r.bottom<vh*.05||r.top>vh*.95)continue;var cs=elColor(e),y=(r.top+r.bottom)/2/vh;
+      if(cs){out.push({c:cs[0],y:y});cs.slice(1).forEach(function(c){extra.push({c:c,y:y})})}}
+    if(out.length<3)out=out.concat(extra).slice(0,6);content=out}
   function deep(){var h=heroPal();return deepOf(h?h[0]:SEQ[0])}
   function ground(d){var p=phase(d);if(p<=1)return mx(INK,deep(),p);var j=journey(d),lt=mx(PAPER,pastel(seqAt(0,j)),.14);return mx(deep(),lt,p-1)}
   var CL=[[.16,.22,.2,.16,23,0],[.84,.3,.18,.2,29,1.6],[.42,.7,.22,.16,34,2.9],[.78,.86,.2,.18,27,4.1],[.1,.9,.18,.14,38,5.3]];
@@ -76,12 +87,14 @@ K.sky=function(o){o=o||{};if(K._sky)return K._sky;
     for(var k=0;k<CL.length;k++){var q=CL[k],cx=CW*(q[0]+q[2]*Math.sin(t*6.2832/q[4]+q[5])),cy=CH*(q[1]+q[3]*Math.cos(t*6.2832/(q[4]*1.27)+q[5])),d=y+cy/CH*vh,p=phase(d),j=journey(d),
         base=seqAt(k,j),R=Math.max(CW,CH)*.5;
       /* lean toward what's on screen, nearest first */
-      if(content.length){var best=content[0],bd=9;content.forEach(function(x){var dd=Math.abs(x.y-cy/CH)+(k%content.length===content.indexOf(x)?0:.15);if(dd<bd){bd=dd;best=x}});base=mx(base,best.c,.5)}
+      if(content.length){var best=content[k%content.length],bd=9;if(!best.all)content.forEach(function(x){var dd=Math.abs(x.y-cy/CH)+(k%content.length===content.indexOf(x)?0:.15);if(dd<bd){bd=dd;best=x}});base=mx(base,best.c,best.all?Math.max(PULL,.62):PULL)}
       if(p<=1&&hp)base=mx(base,hp[k%hp.length],.65);
+      /* colours glide (about a second) instead of jumping when what's on screen changes */
+      if(!cur[k]||still()||!lastDraw)cur[k]=base;else cur[k]=mx(cur[k],base,1-Math.exp(-Math.min(120,now-lastDraw)/900));base=cur[k];
       var foot=1-sm((d-(dh-vh*1.1))/(vh*.7))*.55,a1=p<=1?.34*(1-.4*p):.2*(2-p),a2=p<=1?0:.7*(p-1)*foot,rg,gc=glow(base),pc=pastel(base);
       if(a1>.01){rg=ctx.createRadialGradient(cx,cy,0,cx,cy,R);rg.addColorStop(0,rgba(gc,a1));rg.addColorStop(1,rgba(gc,0));ctx.fillStyle=rg;ctx.fillRect(0,0,CW,CH)}
       if(a2>.01){rg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*1.1);rg.addColorStop(0,rgba(pc,a2));rg.addColorStop(1,rgba(pc,0));ctx.fillStyle=rg;ctx.fillRect(0,0,CW,CH)}}
-    var lite=phase(y+70)>1.55,b=D.body;if(lite!==b.classList.contains('hd-lite')){b.classList.toggle('hd-lite',lite);b.classList.toggle('hl-dark',!lite)}}
+    lastDraw=now;var lite=phase(y+70)>1.55,b=D.body;if(lite!==b.classList.contains('hd-lite')){b.classList.toggle('hd-lite',lite);b.classList.toggle('hl-dark',!lite)}}
   function loop(now){raf=0;if(D.hidden)return;var y=scrollY;if(y!==lastY||(!still()&&now-lastT>60)){lastY=y;lastT=now;draw(now)}raf=requestAnimationFrame(loop)}
   D.body.classList.add('hl-dark');measure();draw(performance.now());raf=requestAnimationFrame(loop);
   function re(){measure();draw(performance.now())}
@@ -161,8 +174,8 @@ function wire(){var cfg=W.HLKIT_PAGE||{};
   $$('[data-hl-step]').forEach(K.step);
   $$('[data-hl-magnet]').forEach(function(e){K.magnet(e,e.closest('[data-hl-magnet-zone]')||e)});
   $$('[data-hl-grid]').forEach(function(h){if(h.__grid)return;var f=D.createElement('div');f.className='hl-field';f.setAttribute('aria-hidden','true');f.setAttribute('data-no-anim','');var c=D.createElement('canvas');f.appendChild(c);h.insertBefore(f,h.firstChild);
-    var sky=K._sky,seq=sky?sky.seq():K.roll();h.__grid=K.dotGrid(c,{host:h,act:glow(seq[0])})});
-  if(cfg.dark&&cfg.light&&!cfg.noSky)K.sky({dark:cfg.dark,light:cfg.light,bridge:cfg.bridge,lead:cfg.lead,sample:cfg.sample});
+    var sky=K._sky,seq=sky?sky.seq():K.roll();var ink=h.getAttribute('data-hl-grid')==='ink';h.__grid=K.dotGrid(c,ink?{host:h,act:[22,163,74],base:[13,13,15],alpha:.1}:{host:h,act:glow(seq[0])})});
+  if(((cfg.dark&&cfg.light)||cfg.mode==='light')&&!cfg.noSky)K.sky({dark:cfg.dark,light:cfg.light,bridge:cfg.bridge,lead:cfg.lead,sample:cfg.sample,focus:cfg.focus,pull:cfg.pull,mode:cfg.mode});
 }
 /* smooth scroll stays with the site's own Lenis embed (window.__lenis): the kit never starts a second one */
 if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',wire);else wire();
