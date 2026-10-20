@@ -9,9 +9,10 @@
         data-hl-step                 windows open in stepped frames from the centre (with the reveal engine)
         data-hl-magnet               leans toward the pointer
         data-hl-grid                 a Dot Grid in this hero
-                                     (tokens: ink = dark dots; lively = halftone wave, colour clouds, green lens)
+                                     (tokens: ink = dark dots; lively = halftone wave, colour clouds, green lens; dim = half strength, for type on ink)
         data-hl-speed="1.6"           with lively: how fast the wave and clouds move (1 = calm)
    Page config: window.HLKIT_PAGE = {dark:'#hero', light:'#index', lead:'magenta', sample:'img.wk-thumb,[data-palette]'}
+   or {mode:'light'} (the whole page in the light sky) or {mode:'dark', heroPalette:fn} (the whole page on ink, like Home's hero)
    Motion stands down for prefers-reduced-motion and the site's Reduce motion switch (body.a11y-motion). */
 (function(){
 'use strict';
@@ -60,12 +61,14 @@ K.sky=function(o){o=o||{};if(K._sky)return K._sky;
   D.documentElement.classList.add('hl-sky-on');/* the Designer's ground colours ([data-hl-ground]) step aside for the sky */
   try{var nc=D.createElement('canvas');nc.width=nc.height=128;var nx=nc.getContext('2d'),id=nx.createImageData(128,128);for(var q=0;q<id.data.length;q+=4){var v=Math.random()*255|0;id.data[q]=id.data[q+1]=id.data[q+2]=v;id.data[q+3]=255}nx.putImageData(id,0,0);gr.style.backgroundImage='url('+nc.toDataURL()+')'}catch(e){}
   var ctx=cv.getContext('2d'),CW=72,CH=48,INK=[13,13,15],PAPER=[250,248,246];cv.width=CW;cv.height=CH;
-  var DRIFT=o.drift||1,AMP=o.amp||1,SEQ=(o.seq&&o.seq.length?o.seq:K.roll(o.lead)),LIGHT=o.mode==='light',PULL=o.pull||.5,cur=[],lastDraw=0,sampleEls=[],content=[],d0=0,d1=0,d2=0,dh=0,vh=innerHeight,t0=performance.now(),lastY=-1,lastT=0,raf=0,lastSample=0;
+  var DRIFT=o.drift||1,AMP=o.amp||1,SEQ=(o.seq&&o.seq.length?o.seq:K.roll(o.lead)),LIGHT=o.mode==='light',DARK=o.mode==='dark',PULL=o.pull||.5,cur=[],lastDraw=0,sampleEls=[],content=[],d0=0,d1=0,d2=0,dh=0,vh=innerHeight,t0=performance.now(),lastY=-1,lastT=0,raf=0,lastSample=0;
   function el(x){return typeof x==='string'?$(x):x}
   function heroPal(){var p=o.heroPalette&&o.heroPalette();return p&&p.length?p:null}
   function measure(){vh=innerHeight;var y=scrollY,a=el(o.dark),b=el(o.light),br=el(o.bridge);dh=D.documentElement.scrollHeight;sampleEls=$$(o.sample||'[data-palette]');
     /* light pages (no ink hero): the whole page sits in the light sky from the top */
     if(LIGHT){d0=-3;d1=-2;d2=-1;return}
+    /* dark pages (Get in touch): the whole page stays on ink, glowing in the hero's colours, like Home's hero */
+    if(DARK){d0=1e9;d1=1e9+1;d2=1e9+2;return}
     if(!a||!b){d0=vh*.6;d1=vh*1.1;d2=vh*1.6;return}
     var ab=a.getBoundingClientRect().bottom+y,bt=b.getBoundingClientRect().top+y;d0=ab-vh*.28;d1=br?br.getBoundingClientRect().top+y+br.offsetHeight*.5:(ab+bt)/2;
     d2=bt+Math.min(240,vh*.28);if(d1<d0+80)d1=d0+80;if(d2<d1+120)d2=d1+120;dh=D.documentElement.scrollHeight;
@@ -125,7 +128,7 @@ K.dotGrid=function(cv,o){if(!cv)return null;o=o||{};var ctx=cv.getContext('2d'),
       if(P.on&&d2<prox*prox){hot.push([x,y,1-Math.sqrt(d2)/prox,ci?C[ci-1][2]:base,sz]);continue}
       var si=Math.min(SZ-1,sz*SZ|0),r=R*(.45+.95*sz);LP[ci*SZ+si].moveTo(x+r,y);LP[ci*SZ+si].arc(x,y,r,0,6.2832)}
     var ba=o.alpha||.1;
-    for(j=0;j<4;j++)for(var k=0;k<SZ;k++){var col=j?C[j-1][2]:base,al=j?(.22+.5*(k+.5)/SZ):ba*(.6+1.4*(k+.5)/SZ);ctx.fillStyle=rgba(col,al);ctx.fill(LP[j*SZ+k])}
+    for(j=0;j<4;j++)for(var k=0;k<SZ;k++){var col=j?C[j-1][2]:base,al=(j?(.22+.5*(k+.5)/SZ):ba*(.6+1.4*(k+.5)/SZ))*(o.dim||1);ctx.fillStyle=rgba(col,al);ctx.fill(LP[j*SZ+k])}
     for(i=0;i<hot.length;i++){var h=hot[i],q=h[2]*h[2];ctx.fillStyle=rgba(mx(h[3],act,Math.min(1,q*1.3)),Math.min(.95,.3+.7*q));ctx.beginPath();ctx.arc(h[0],h[1],R*(.6+.9*h[4])*(1+q*1.1),0,6.2832);ctx.fill()}}
   function draw(now){if(o.lively)return drawLively(now);ctx.clearRect(0,0,Wc,Hc);var R=innerWidth<768?1.05:1.3,prox=innerWidth<768?110:170,t=(now-t0)/1000,br=!still(),px=P.sx,py=P.sy,hot=[],i,d,b;
     for(b=0;b<BANDS;b++)paths[b]=new Path2D();
@@ -194,8 +197,8 @@ function wire(){var cfg=W.HLKIT_PAGE||{};
   $$('[data-hl-magnet]').forEach(function(e){K.magnet(e,e.closest('[data-hl-magnet-zone]')||e)});
   $$('[data-hl-grid]').forEach(function(h){if(h.__grid)return;var f=D.createElement('div');f.className='hl-field';f.setAttribute('aria-hidden','true');f.setAttribute('data-no-anim','');var c=D.createElement('canvas');f.appendChild(c);h.insertBefore(f,h.firstChild);
     var sky=K._sky,seq=sky?sky.seq():K.roll();var tok=' '+(h.getAttribute('data-hl-grid')||'')+' ',ink=tok.indexOf(' ink ')>=0,lively=tok.indexOf(' lively ')>=0;var go=ink?{host:h,act:[22,163,74],base:[13,13,15],alpha:.1}:{host:h,act:glow(seq[0])};
-    if(lively){go.lively=true;go.act=[46,214,64];go.tint=function(){var s=K._sky;return s?s.seq():null};go.speed=parseFloat(h.getAttribute('data-hl-speed'))||1}h.__grid=K.dotGrid(c,go)});
-  if(((cfg.dark&&cfg.light)||cfg.mode==='light')&&!cfg.noSky)K.sky({dark:cfg.dark,light:cfg.light,bridge:cfg.bridge,lead:cfg.lead,sample:cfg.sample,focus:cfg.focus,pull:cfg.pull,mode:cfg.mode,seq:cfg.seq,drift:cfg.drift,amp:cfg.amp});
+    if(lively){go.lively=true;go.act=[46,214,64];go.tint=function(){var s=K._sky;return s?s.seq():null};go.speed=parseFloat(h.getAttribute('data-hl-speed'))||1;if(tok.indexOf(' dim ')>=0)go.dim=.5}h.__grid=K.dotGrid(c,go)});
+  if(((cfg.dark&&cfg.light)||cfg.mode==='light'||cfg.mode==='dark')&&!cfg.noSky)K.sky({dark:cfg.dark,light:cfg.light,bridge:cfg.bridge,lead:cfg.lead,sample:cfg.sample,focus:cfg.focus,pull:cfg.pull,mode:cfg.mode,seq:cfg.seq,drift:cfg.drift,amp:cfg.amp,heroPalette:cfg.heroPalette});
 }
 /* smooth scroll stays with the site's own Lenis embed (window.__lenis): the kit never starts a second one */
 if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',wire);else wire();
