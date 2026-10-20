@@ -92,7 +92,7 @@ var L=(function(){
 })();
 
 /* ---------- the signal track ---------- */
-var T={l:0,r:0,tl:0,tr:0,dir:1,run:0};
+var T={l:0,r:0,tl:0,tr:0,dir:1,run:0},drawn=false;
 var FAST=.15,SLOW=.06;/* leading and trailing edge, per frame. Lower = slower, more stretch */
 function bounds(a){var s=a.querySelector('.hdx-t')||a,ls=parseFloat(getComputedStyle(s).letterSpacing)||0,n=nav.getBoundingClientRect(),r=s.getBoundingClientRect();
   return [r.left-n.left,r.right-n.left-ls]}
@@ -130,9 +130,10 @@ function paint(){sq=0;var y=W.pageYOffset||R.scrollTop||0,p=clamp(y/dist,0,1),c=
   hd.classList.toggle('on-dark',hit&&p>.05)}
 function q(){if(!sq)sq=requestAnimationFrame(paint)}
 readVars();collect();paint();
+if(D.fonts&&D.fonts.ready)D.fonts.ready.then(function(){readVars();q()});
 W.addEventListener('scroll',q,{passive:true});
 W.addEventListener('resize',function(){readVars();collect();q()});
-W.addEventListener('load',function(){readVars();collect();paint();if(cur&&!T.run)go(cur,true)});
+W.addEventListener('load',function(){readVars();collect();paint();if(cur&&drawn&&!T.run&&!(nav&&nav.classList.contains('is-hover')))go(cur,true)});
 D.addEventListener('DOMContentLoaded',function(){collect();q()});
 
 /* ---------- idle shimmer: only after 8s with no scroll, pointer or keys ---------- */
@@ -141,25 +142,26 @@ var idleT=0;function idle(){clearTimeout(idleT);idleT=setTimeout(function(){if(L
 
 /* ---------- subtitle type-in ---------- */
 var CH='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789';
-function scramble(el,txt,ms){if(!el)return;cancelAnimationFrame(el._r);if(still()){el.textContent=txt;return}var from=el.textContent,n=Math.max(from.length,txt.length),t0=now();
+function scramble(el,txt,ms,done){if(!el)return;cancelAnimationFrame(el._r);if(still()){el.textContent=txt;if(done)done();return}var from=el.textContent,n=Math.max(from.length,txt.length),t0=now();
   function f(){var p=Math.min(1,(now()-t0)/ms),rev=Math.floor(p*n),s='';
     for(var i=0;i<n;i++){if(i<rev)s+=txt[i]||'';else if(i<rev+5){if(i<txt.length)s+=txt[i]===' '?' ':CH[Math.random()*CH.length|0]}else s+=from[i]||''}
-    el.textContent=s;if(p<1)el._r=requestAnimationFrame(f);else el.textContent=txt}
+    el.textContent=s;if(p<1)el._r=requestAnimationFrame(f);else{el.textContent=txt;if(done)done()}}
   el._r=requestAnimationFrame(f)}
 
 /* ---------- load ---------- */
 function ready(){hd.classList.add('is-ready')}
 function settle(){requestAnimationFrame(function(){requestAnimationFrame(function(){hd.classList.remove('is-now')})})}
-if(quiet){hd.classList.add('is-now','is-in');ready();settle();if(cur)go(cur,true);else go(null,true)}
+if(quiet){drawn=true;hd.classList.add('is-now','is-in');ready();settle();if(cur)go(cur,true);else go(null,true)}
 else if(arrive){
-  hd.classList.add('is-now','is-in');ready();settle();if(L){L.scattered();L.reform(60)}
+  drawn=true;hd.classList.add('is-now','is-in');ready();settle();if(L){L.scattered();L.reform(60)}
   if(cur)requestAnimationFrame(function(){go(cur,true)});else go(null,true)}
 else{
   if(L)L.assemble();
   requestAnimationFrame(function(){requestAnimationFrame(function(){hd.classList.add('is-in')})});
   setTimeout(ready,1400);
-  if(sub){var st=sub.textContent;sub.setAttribute('aria-label',st);sub.textContent='';setTimeout(function(){scramble(sub,st,560)},380)}
-  if(trk){if(cur){requestAnimationFrame(function(){var b=bounds(cur);T.l=T.r=T.tl=T.tr=b[0];tpaint();setTimeout(function(){go(cur)},760)})}else go(null,true)}}
+  if(sub){var st=sub.textContent;sub.setAttribute('aria-label',st);sub.style.minHeight=sub.offsetHeight+'px';sub.textContent='';
+    setTimeout(function(){scramble(sub,st,560,function(){sub.style.minHeight='';readVars();q()})},380)}
+  if(trk){if(cur){requestAnimationFrame(function(){var b=bounds(cur);T.l=T.r=T.tl=T.tr=b[0];tpaint();setTimeout(function(){drawn=true;if(!(nav&&nav.classList.contains('is-hover')))go(cur)},760)})}else{drawn=true;go(null,true)}}}
 
 /* ---------- page change: exit here, arrival on the next page ---------- */
 function leaving(a,e){if(e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return false;
