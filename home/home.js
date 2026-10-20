@@ -3862,14 +3862,6 @@ HL.sky=SKY;
 /* the header's links decrypt on hover, as on every page */
 $$('.hd-nav a').forEach(function(a){a.setAttribute('data-hl-scramble','hover')});
 
-/* ================= the chapter rail: 1 See it, 2 Play it, 3 Start a project ================= */
-(function(){var rail=$('.ch-rail');if(!rail)return;var links=$$('a',rail),secs=links.map(function(a){return $(a.getAttribute('href'))}),cur=0;
-  function upd(){var vh=innerHeight,c=1;secs.forEach(function(s,i){if(s&&s.getBoundingClientRect().top<vh*.55)c=i+1});if(scrollY+vh>=D.documentElement.scrollHeight-6)c=secs.length;
-    if(c!==cur){cur=c;links.forEach(function(a,i){var on=i+1===c;a.classList.toggle('on',on);a.classList.toggle('past',i+1<c);if(on)a.setAttribute('aria-current','step');else a.removeAttribute('aria-current')})}
-    var hd=$('.hd-in');if(hd&&innerWidth<768)rail.style.top=(hd.getBoundingClientRect().bottom+8)+'px';else rail.style.top=''}
-  links.forEach(function(a,i){a.addEventListener('click',function(e){var t=secs[i];if(!t)return;e.preventDefault();HL.scrollTo(t,i===0?0:-90)})});
-  addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);upd();setTimeout(upd,600)})();
-
 /* ================= the bridge: the demo window leaves the hero and lands as practice 01 ================= */
 (function(){var ghost=$('#pg-ghost'),img=$('#pg-ghost-img'),win=$('#win'),n1=$('.pg-node[data-g="sim"]'),br=$('#pg-bridge'),words=[];if(!br)return;
   $$('.pg-bl>span',br).forEach(function(sp){var t=sp.textContent;sp.textContent='';t.split(' ').forEach(function(w,i){var e=D.createElement('span');e.className='pg-bw';e.textContent=w;sp.appendChild(e);if(i<t.split(' ').length-1)sp.appendChild(D.createTextNode(' '));words.push(e)})});
