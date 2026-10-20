@@ -1,0 +1,46 @@
+/* About: code-only CSS. Layout and look live on the native ab5-/ab6-/sv10- classes in Webflow (the window's glass rim,
+   underline offsets, tabular figures, the vertical tagline and text wrapping are native too). This file only carries
+   motion states the scripts toggle and selectors the Designer can't hold. */
+.ab5-ground .wr{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .03em .16em;margin:0 -.03em -.16em}
+.ab5-ground .wi{display:inline-block;transform:translateY(112%);transition:transform 1.05s cubic-bezier(.16,1,.3,1)}
+.ab5-ground .is-in .wi{transform:none}
+.ab5-ix,.ab5-name{transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+.ab5-ground.is-live [data-alive]:not(.is-in) .ab5-ix,.ab5-ground.is-live [data-alive]:not(.is-in) .ab5-name{opacity:0;transform:translateY(12px)}
+@media (prefers-reduced-motion:reduce){.ab5-ground .wi,.ab5-ix,.ab5-name{transition:none!important;transform:none!important;opacity:1!important}}
+body.a11y-motion .ab5-ground .wi,body.a11y-motion .ab5-ix,body.a11y-motion .ab5-name{transition:none!important;transform:none!important;opacity:1!important}
+
+
+/* About 6: the regrouped stack on the Services rows and the dot-matrix group names. Layout lives on the classes. */
+.dm-on{line-height:0}.dm-on .dm-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.dm-cv{display:block;max-width:none}
+.ab6-stk .sv10-xh:focus-visible{outline:2px solid #0D0D0D;outline-offset:-2px;border-radius:6px}
+.ab6-stk .sv10-xnm{transition:transform .7s cubic-bezier(.16,1,.3,1)}
+.ab6-stk .sv10-nm{background:linear-gradient(currentColor,currentColor) 0 100%/0 1.5px no-repeat;padding-bottom:2px;transition:background-size .6s cubic-bezier(.16,1,.3,1)}
+.ab6-stk .sv10-xh:hover .sv10-xnm,.ab6-stk .sv10-xr.open .sv10-xnm{transform:translateX(5px)}
+.ab6-stk .sv10-xh:hover .sv10-nm{background-size:100% 1.5px}
+.ab6-stk [class^="ab6-led"]{box-shadow:0 0 0 1px rgba(13,13,13,.45);transition:width .5s cubic-bezier(.16,1,.3,1),margin .5s cubic-bezier(.16,1,.3,1),opacity .3s}
+@media (hover:hover) and (pointer:fine){.ab6-stk .sv10-xh:hover [class^="ab6-led"],.ab6-stk .sv10-xh:focus-visible [class^="ab6-led"],.ab6-stk .sv10-xr.open [class^="ab6-led"]{width:8px;margin-right:9px;opacity:1}}
+.ab6-stk .sv10-pm{transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.ab6-stk .sv10-pm::before,.ab6-stk .sv10-pm::after{content:"";position:absolute;left:0;right:0;top:6px;height:2px;background:#0D0D0D;transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.ab6-stk .sv10-pm::after{transform:rotate(90deg)}
+.ab6-stk .sv10-xr.open .sv10-pm{transform:rotate(180deg)}.ab6-stk .sv10-xr.open .sv10-pm::after{transform:rotate(0)}
+.ab6-stk .sv10-xp{grid-template-rows:0fr;transition:grid-template-rows .75s cubic-bezier(.16,1,.3,1)}
+.ab6-stk .sv10-xr.open .sv10-xp{grid-template-rows:1fr}
+.ab6-stk .sv10-xc{opacity:0;transform:translateY(-8px);transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.ab6-stk .sv10-xr.open .sv10-xc{opacity:1;transform:none;transition-delay:.1s}
+@media (min-width:992px) and (hover:hover) and (pointer:fine){
+ .ab6-stk .sv10-xt{translate:0 -50%;clip-path:inset(0 0 0 100%);transform:translateX(8px);transition:clip-path .6s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1),opacity .3s}
+ .ab6-stk .sv10-xh:hover .sv10-xt:not(.no),.ab6-stk .sv10-xh:focus-visible .sv10-xt:not(.no){opacity:.82;clip-path:inset(0);transform:none}
+ .ab6-stk .sv10-xr.open .sv10-xt{opacity:0!important}}
+@media (max-width:991px),(hover:none),(pointer:coarse){.ab6-stk .sv10-xt{display:none!important}}
+@media (prefers-reduced-motion:reduce){.ab6-stk .sv10-xp,.ab6-stk .sv10-xc{transition:none!important}}
+body.a11y-motion .ab6-stk .sv10-xp,body.a11y-motion .ab6-stk .sv10-xc{transition:none!important}
+
+/* ---------- About motion (HL Kit + GSAP) ---------- */
+/* the hero's lively dot grid runs edge to edge behind the hero copy */
+#hero>.hl-field{left:calc(-1*var(--ab-gx,0px));right:calc(-1*var(--ab-gx,0px));z-index:-1}
+/* the scroll-lit statement */
+.ab-sw{display:inline-block;will-change:opacity,filter,transform}
+@media (prefers-reduced-motion:reduce){.ab-sw{opacity:1!important;filter:none!important;transform:none!important}}
+body.a11y-motion .ab-sw{opacity:1!important;filter:none!important;transform:none!important}
+/* links that lean toward the pointer: GSAP moves them every frame, so no CSS transition on transform (it would lag and stutter) */
+.ab5-u[data-hl-magnet],.ab5-ulink[data-hl-magnet]{transition-property:color,background-color,border-color,text-decoration-color,opacity}
