@@ -3876,16 +3876,23 @@ $$('.hd-nav a').forEach(function(a){a.setAttribute('data-hl-scramble','hover')})
   HL.morphOn=false;if(!ghost||!win||!n1||OPT!=='b')return;
   var TH=W.HM_THUMBS||{};function pic(){var st=W.__HM&&W.__HM.state(),id=st&&st.id;if(id&&TH[id]&&img.getAttribute('data-id')!==id){img.src=TH[id];img.setAttribute('data-id',id)}}
   pic();D.addEventListener('hm:palette',function(){setTimeout(pic,50)});
-  var s0=0,s1=1,PH=W.matchMedia('(max-width:767px)'),live=!still()&&!PH.matches;HL.morphOn=live;if(live)n1.classList.add('pg-landing');
-  function measure(){var y=scrollY,w=win.getBoundingClientRect(),n=n1.getBoundingClientRect();s0=Math.max(40,w.bottom+y-innerHeight*.55);s1=Math.max(s0+200,n.top+y-innerHeight*.34)}
-  function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
+  var s0=0,s1=1,PH=W.matchMedia('(max-width:991px)')/* below 992 the window spans the text column, so it simply scrolls away */,live=!still()&&!PH.matches;HL.morphOn=live;if(live)n1.classList.add('pg-landing');
+  /* pacing: the flight starts once the window's top has slipped under the header and lands when slot 01 sits a third of the way down. The curve has short
+     ramps and a long even middle, so the window peels off the hero, hovers on screen while it shrinks, and settles into its slot at
+     scroll speed (no exit off the top, no late swoop). */
+  function measure(){var y=scrollY,w=win.getBoundingClientRect(),n=n1.getBoundingClientRect();s0=Math.max(0,w.top+y-HDR()+w.height*.12);s1=Math.max(s0+300,n.top+y-innerHeight*.34)}
+  function HDR(){var h=$('.hd-in')||$('header');return h?Math.max(0,h.getBoundingClientRect().bottom):0}
+  var R1=.05,R2=.2,V=1/(1-R1/2-R2/2);
+  function ease(t){return t<R1?V*t*t/(2*R1):t<1-R2?V*(R1/2+t-R1):1-V*(1-t)*(1-t)/(2*R2)}
+  /* the line reveals by where it sits on screen: words start at 88% down and are all lit by the time the line reaches 48% */
+  var bl=$('.pg-bl',br);function wordsAt(){if(!bl)return 0;var t=bl.getBoundingClientRect().top/innerHeight;return cl((.88-t)/.4,0,1)}
   function upd(){if(still()){ghost.style.visibility='hidden';win.style.opacity='';n1.style.opacity='';n1.classList.remove('pg-landing');words.forEach(function(w){w.style.opacity='';w.style.transform=''});return}
     var phone=PH.matches;
-    var p=cl((scrollY-s0)/(s1-s0),0,1),a=win.getBoundingClientRect(),b=n1.getBoundingClientRect(),e=ease(cl((p-.04)/.9,0,1));
-    /* the words arrive with the window's flight */
-    words.forEach(function(w,i){var q=cl((p-.08-i*.045)/.16,0,1);w.style.opacity=(.12+.88*q).toFixed(3);w.style.transform='translateY('+((1-q)*14).toFixed(1)+'px)'});
+    var p=cl((scrollY-s0)/(s1-s0),0,1),a=win.getBoundingClientRect(),b=n1.getBoundingClientRect(),e=ease(p);
+    /* the words light one after another as the line climbs into the reading zone */
+    var r=wordsAt(),n=words.length,st=n>1?.5/(n-1):0;words.forEach(function(w,i){var q=cl((r-i*st)/.5,0,1);q=q*q*(3-2*q);w.style.opacity=(.12+.88*q).toFixed(3);w.style.transform='translateY('+((1-q)*14).toFixed(1)+'px)'});
     if(phone||p<=0||p>=1){ghost.style.visibility='hidden';win.style.opacity='';n1.style.opacity=(phone||p>=1)?'':'0';return}
-    var x=a.left+(b.left-a.left)*e,y=a.top+(b.top-a.top)*e,ww=a.width+(b.width-a.width)*e,hh=a.height+(b.height-a.height)*e,fin=cl((p-.07)/.06,0,1),fout=cl((p-.9)/.1,0,1);
+    var x=a.left+(b.left-a.left)*e,y=a.top+(b.top-a.top)*e,ww=a.width+(b.width-a.width)*e,hh=a.height+(b.height-a.height)*e,fin=cl((p-.01)/.05,0,1),fout=cl((p-.9)/.1,0,1);
     ghost.style.visibility='visible';ghost.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';ghost.style.width=ww.toFixed(1)+'px';ghost.style.height=hh.toFixed(1)+'px';
     ghost.style.opacity=(fin*(1-fout)).toFixed(3);ghost.style.setProperty('--r',(12-2*e).toFixed(1)+'px');ghost.style.setProperty('--lift',(Math.sin(e*Math.PI)).toFixed(3));
     win.style.opacity=(1-fin*.92).toFixed(3);n1.style.opacity=fout.toFixed(3)}
